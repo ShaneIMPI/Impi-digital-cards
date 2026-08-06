@@ -19,7 +19,7 @@ export const GITHUB_BRANCH = 'main'
 // Leave blank to show a plain "IMPI" text mark instead.
 export const DEFAULT_LOGO_URL = ''
 
-export const COMPANY_NAME = 'IMPI Protection Agency (Pty) Ltd'
+export const COMPANY_NAME = 'IMPI RMS (Pty) Ltd'
 export const COMPANY_WEBSITE = 'www.impi-secure.co.za'
 export const COMPANY_PHONE = '012 543 0640'
 
