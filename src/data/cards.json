@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "id": "49c99e9b-dbd2-403e-98df-7ebc97a840e3",
+    "full_name": "Shane Steynfaardt",
+    "role_title": "Senior Operations Manager",
+    "phone": "083 782 2207",
+    "email": "shane@impi-secure.co.za",
+    "address": "10 Kosmos Crescent, Rynoue AH, Roodeplaat, 0039",
+    "slug": "shane-steynfaardt",
+    "photo_url": "",
+    "logo_url": "logos/1786135510785-impi-logo.png",
+    "accent_color": "#B8942E",
+    "dark_color": "#231F20",
+    "is_active": true
+  }
+]
