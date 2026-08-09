@@ -55,7 +55,7 @@ const CardPreview = forwardRef(function CardPreview(
       )}
 
       {(onSaveContact || onDownloadImage) && (
-        <div className="card-action-row" data-html2canvas-ignore={onSaveContact ? undefined : 'true'}>
+                <div className="card-action-row">
           {onSaveContact && (
             <button className="card-save-btn" onClick={onSaveContact} disabled={saving}>
               {saving ? 'Preparing…' : '+ Save to Contacts'}
