@@ -8,13 +8,53 @@ function isIOS() {
   )
 }
 
+// Shows the generated image full-screen on the CURRENT page (no new tab or
+// window), with instructions to tap-and-hold to save it. This avoids iOS
+// Safari's popup-blocking quirks entirely, since nothing is opened.
+function showImageOverlay(dataUrl, fileName) {
+  const overlay = document.createElement('div')
+  overlay.style.cssText = `
+    position: fixed; inset: 0; background: rgba(17,17,17,0.95);
+    z-index: 999999; display: flex; flex-direction: column;
+    align-items: center; padding: 24px 16px 40px; overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  `
+
+  const instructions = document.createElement('p')
+  instructions.textContent =
+    'Tap and hold the image below, then choose "Save to Photos" or "Add to Photos".'
+  instructions.style.cssText = `
+    color: #fff; font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 15px; text-align: center; margin: 8px 0 20px; max-width: 420px;
+  `
+
+  const img = document.createElement('img')
+  img.src = dataUrl
+  img.alt = fileName
+  img.style.cssText = 'max-width: 100%; height: auto; border-radius: 10px;'
+
+  const closeBtn = document.createElement('button')
+  closeBtn.textContent = 'Done'
+  closeBtn.type = 'button'
+  closeBtn.style.cssText = `
+    margin-top: 24px; background: #fff; color: #111; border: none;
+    border-radius: 10px; padding: 14px 32px; font-size: 15px; font-weight: 700;
+  `
+  closeBtn.onclick = () => document.body.removeChild(overlay)
+
+  overlay.appendChild(instructions)
+  overlay.appendChild(img)
+  overlay.appendChild(closeBtn)
+  document.body.appendChild(overlay)
+}
+
 // Renders a DOM node (the card) to a PNG.
 //
 // Desktop browsers and Android Chrome: triggers a normal file download.
 //
-// iOS Safari doesn't reliably support forcing a file download from a data
-// URL — tapping usually does nothing, or briefly opens the image without
-// saving it. Instead, we open the image in a new tab, where the standard
+// iOS Safari doesn't reliably support forcing a file download, and popups
+// opened after an async operation are unreliable too. Instead, we show the
+// image full-screen on the same page, where the standard
 // "tap and hold → Save to Photos" gesture works correctly.
 export async function downloadCardAsPng(node, fileName) {
   if (!node) throw new Error('Card element not found.')
@@ -26,31 +66,7 @@ export async function downloadCardAsPng(node, fileName) {
   })
 
   if (isIOS()) {
-    const win = window.open()
-    if (!win) {
-      throw new Error(
-        'Your browser blocked the pop-up. Please allow pop-ups for this site and try again.'
-      )
-    }
-    win.document.write(`
-      <!doctype html>
-      <html>
-        <head>
-          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <title>${fileName}</title>
-          <style>
-            body { margin: 0; background: #111; display: flex; flex-direction: column; align-items: center; }
-            p { color: #fff; font-family: -apple-system, sans-serif; font-size: 15px; padding: 16px; text-align: center; margin: 0; }
-            img { max-width: 100%; height: auto; display: block; }
-          </style>
-        </head>
-        <body>
-          <p>Tap and hold the image below, then choose "Save to Photos" or "Add to Photos".</p>
-          <img src="${dataUrl}" alt="${fileName}" />
-        </body>
-      </html>
-    `)
-    win.document.close()
+    showImageOverlay(dataUrl, fileName)
     return
   }
 
