@@ -8,6 +8,25 @@ function isIOS() {
   )
 }
 
+// Ensures every <img> inside the card (logo, photo, QR code) is fully
+// decoded before we snapshot it. Without this, fast taps or slower
+// connections can catch an image mid-load and it renders blank in the
+// exported PNG even though it displays fine on screen.
+async function waitForImages(node) {
+  const imgs = Array.from(node.querySelectorAll('img'))
+  await Promise.all(
+    imgs.map((img) => {
+      if (img.complete && img.naturalWidth > 0) {
+        return img.decode ? img.decode().catch(() => {}) : Promise.resolve()
+      }
+      return new Promise((resolve) => {
+        img.addEventListener('load', () => resolve(), { once: true })
+        img.addEventListener('error', () => resolve(), { once: true })
+      })
+    })
+  )
+}
+
 // Shows the generated image full-screen on the CURRENT page (no new tab or
 // window), with instructions to tap-and-hold to save it. This avoids iOS
 // Safari's popup-blocking quirks entirely, since nothing is opened.
@@ -59,7 +78,9 @@ function showImageOverlay(dataUrl, fileName) {
 export async function downloadCardAsPng(node, fileName) {
   if (!node) throw new Error('Card element not found.')
 
-    const dataUrl = await toPng(node, {
+  await waitForImages(node)
+
+  const dataUrl = await toPng(node, {
     pixelRatio: 3,
     cacheBust: true,
     backgroundColor: '#ffffff',
