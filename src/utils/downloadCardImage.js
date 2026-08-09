@@ -59,10 +59,17 @@ function showImageOverlay(dataUrl, fileName) {
 export async function downloadCardAsPng(node, fileName) {
   if (!node) throw new Error('Card element not found.')
 
-  const dataUrl = await toPng(node, {
+    const dataUrl = await toPng(node, {
     pixelRatio: 3,
     cacheBust: true,
-    backgroundColor: '#ffffff'
+    backgroundColor: '#ffffff',
+    // Exclude the Save/Download buttons themselves from the exported
+    // image — the card should look the same whether printed or scanned,
+    // with no UI chrome baked in (and no risk of catching a mid-loading
+    // "Preparing…" state, since this callback re-checks per node as the
+    // image renders).
+    filter: (domNode) =>
+      !(domNode.classList && domNode.classList.contains('card-action-row'))
   })
 
   if (isIOS()) {
