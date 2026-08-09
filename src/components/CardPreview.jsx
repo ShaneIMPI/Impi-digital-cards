@@ -15,8 +15,8 @@ const CardPreview = forwardRef(function CardPreview(
     <div className="card-page" style={{ '--accent': accent, '--dark': dark }} ref={ref}>
       <div className="card-header">
         {logo ? (
-          <img src={logo} alt="Company logo" className="card-logo" crossOrigin="anonymous" />
-        ) : (
+        <img src={logo} alt="Company logo" className="card-logo" />
+    ) : (
           <div className="card-logo-fallback">IMPI</div>
         )}
         <span className="card-company">{COMPANY_NAME}</span>
@@ -28,8 +28,8 @@ const CardPreview = forwardRef(function CardPreview(
           <h1 className="card-name">{card.full_name || 'Full name'}</h1>
         </div>
         {photo && (
-          <img src={photo} alt={card.full_name} className="card-photo" crossOrigin="anonymous" />
-        )}
+                    <img src={photo} alt={card.full_name} className="card-photo" crossOrigin="anonymous" />
+    )}
       </div>
 
       <div className="card-contact-row">
