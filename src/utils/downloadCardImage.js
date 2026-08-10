@@ -27,6 +27,46 @@ async function waitForImages(node) {
   )
 }
 
+// Converts every <img> inside the card to an inline base64 data URI,
+// temporarily, right on the live elements. html-to-image has its own
+// internal logic for fetching and embedding remote images, but it isn't
+// reliable in every environment — some images can silently come out
+// blank even though they display fine on screen. Pre-inlining everything
+// ourselves removes that uncertainty entirely: a data URI never needs any
+// further fetching, so there's nothing left for the export step to get
+// wrong. Returns a function that restores the original src values
+// afterwards, so the live page is left exactly as it was.
+async function inlineImages(node) {
+  const imgs = Array.from(node.querySelectorAll('img'))
+  const restoreList = []
+
+  await Promise.all(
+    imgs.map(async (img) => {
+      if (img.src.startsWith('data:')) return // already inline (the QR code)
+      try {
+        const res = await fetch(img.src, { cache: 'force-cache' })
+        const blob = await res.blob()
+        const dataUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onloadend = () => resolve(reader.result)
+          reader.onerror = reject
+          reader.readAsDataURL(blob)
+        })
+        restoreList.push([img, img.getAttribute('src')])
+        img.src = dataUrl
+      } catch (err) {
+        console.warn('Could not inline image for export:', img.src, err)
+      }
+    })
+  )
+
+  return function restore() {
+    restoreList.forEach(([img, originalSrc]) => {
+      img.setAttribute('src', originalSrc)
+    })
+  }
+}
+
 // Shows the generated image full-screen on the CURRENT page (no new tab or
 // window), with instructions to tap-and-hold to save it. This avoids iOS
 // Safari's popup-blocking quirks entirely, since nothing is opened.
@@ -78,30 +118,35 @@ function showImageOverlay(dataUrl, fileName) {
 export async function downloadCardAsPng(node, fileName) {
   if (!node) throw new Error('Card element not found.')
 
-  await waitForImages(node)
+  const restoreImages = await inlineImages(node)
+  try {
+    await waitForImages(node)
 
-  const dataUrl = await toPng(node, {
-    pixelRatio: 3,
-    cacheBust: true,
-    backgroundColor: '#ffffff',
-    // Exclude the Save/Download buttons themselves from the exported
-    // image — the card should look the same whether printed or scanned,
-    // with no UI chrome baked in (and no risk of catching a mid-loading
-    // "Preparing…" state, since this callback re-checks per node as the
-    // image renders).
-    filter: (domNode) =>
-      !(domNode.classList && domNode.classList.contains('card-action-row'))
-  })
+    const dataUrl = await toPng(node, {
+      pixelRatio: 3,
+      cacheBust: true,
+      backgroundColor: '#ffffff',
+      // Exclude the Save/Download buttons themselves from the exported
+      // image — the card should look the same whether printed or scanned,
+      // with no UI chrome baked in (and no risk of catching a mid-loading
+      // "Preparing…" state, since this callback re-checks per node as the
+      // image renders).
+      filter: (domNode) =>
+        !(domNode.classList && domNode.classList.contains('card-action-row'))
+    })
 
-  if (isIOS()) {
-    showImageOverlay(dataUrl, fileName)
-    return
+    if (isIOS()) {
+      showImageOverlay(dataUrl, fileName)
+      return
+    }
+
+    const a = document.createElement('a')
+    a.href = dataUrl
+    a.download = fileName
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+  } finally {
+    restoreImages()
   }
-
-  const a = document.createElement('a')
-  a.href = dataUrl
-  a.download = fileName
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
 }
