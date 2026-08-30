@@ -15,7 +15,7 @@ export const GITHUB_BRANCH = 'main'
 // passcode-setup.html tool (see SETUP.md) — never paste a real, unencrypted
 // token here directly.
 // ---------------------------------------------------------------------
-export const ENCRYPTED_GITHUB_TOKEN = ''
+export const ENCRYPTED_GITHUB_TOKEN = '9OshM5uJaQDp9U7WetTgppDVFnyU+vZDqRKaSOtyC0Lr8jEc3AKeCTZJZD/nmQpAWXK9O5WavZmWPsT4cEoH4s9ePgesG1kpYDJdpwF0vY/JCqj1K1Oe8MykWnqSnfhqVZoAqqTSiJxhm3tabqnF6UQJTwpaWayF1lmOGBB/+Z9G3oYjLG3esng='
 
 // ---------------------------------------------------------------------
 // COMPANY-WIDE DEFAULTS
