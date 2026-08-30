@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>IMPI Digital Cards — Passcode Setup</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    max-width: 640px;
+    margin: 48px auto;
+    padding: 0 24px;
+    color: #231F20;
+    line-height: 1.5;
+  }
+  h1 { font-size: 22px; }
+  .warning {
+    background: #fff5f5;
+    border: 1px solid #DE1819;
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 14px;
+    margin: 20px 0;
+  }
+  label {
+    display: block;
+    font-weight: 700;
+    font-size: 13px;
+    margin: 20px 0 6px;
+  }
+  input {
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 15px;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+  button {
+    margin-top: 24px;
+    background: #DE1819;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 14px 24px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  button:hover { opacity: 0.9; }
+  textarea {
+    width: 100%;
+    box-sizing: border-box;
+    height: 110px;
+    font-family: 'SF Mono', Consolas, monospace;
+    font-size: 12px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-top: 8px;
+  }
+  .result { display: none; margin-top: 28px; }
+  .result.show { display: block; }
+  .step-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #B8942E;
+  }
+</style>
+</head>
+<body>
+  <h1>IMPI Digital Cards — One-time Passcode Setup</h1>
+  <p>
+    This runs entirely inside your own browser. Nothing is uploaded or sent
+    anywhere — it's a plain local file, not a website.
+  </p>
+  <div class="warning">
+    Use a passcode that's easy for you to remember but hard for someone else
+    to guess — a short phrase works well (e.g. four random words). Since
+    your site's code is public, anyone could technically try guessing
+    passcodes against the encrypted result offline, so avoid short PINs or
+    obvious words.
+  </div>
+
+  <span class="step-label">Step 1</span>
+  <label for="token">Your GitHub access token (from GitHub → Settings → Developer settings → Personal access tokens)</label>
+  <input id="token" type="password" placeholder="github_pat_..." autocomplete="off" />
+
+  <span class="step-label">Step 2</span>
+  <label for="passcode">Choose a passcode you'll remember</label>
+  <input id="passcode" type="password" placeholder="e.g. correct horse battery staple" autocomplete="off" />
+
+  <button onclick="run()">Generate encrypted config value</button>
+
+  <div class="result" id="resultBox">
+    <span class="step-label">Step 3</span>
+    <p>
+      Copy the text below into <code>src/config.js</code> in your repo, as
+      the value of <code>ENCRYPTED_GITHUB_TOKEN</code>. Then close this page
+      — your real token is not saved anywhere once you leave.
+    </p>
+    <textarea id="output" readonly></textarea>
+  </div>
+
+<script>
+const PBKDF2_ITERATIONS = 250000;
+
+async function deriveKey(passcode, salt) {
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', enc.encode(passcode), { name: 'PBKDF2' }, false, ['deriveKey']
+  );
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt']
+  );
+}
+
+function toBase64(bytes) {
+  let binary = '';
+  bytes.forEach((b) => (binary += String.fromCharCode(b)));
+  return btoa(binary);
+}
+
+async function run() {
+  const token = document.getElementById('token').value.trim();
+  const passcode = document.getElementById('passcode').value;
+
+  if (!token || !passcode) {
+    alert('Please fill in both your token and a passcode.');
+    return;
+  }
+  if (!token.startsWith('github_pat_') && !token.startsWith('ghp_')) {
+    if (!confirm('That doesn\u2019t look like a typical GitHub token. Continue anyway?')) return;
+  }
+
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveKey(passcode, salt);
+  const enc = new TextEncoder();
+  const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(token));
+
+  const combined = new Uint8Array(salt.length + iv.length + ciphertext.byteLength);
+  combined.set(salt, 0);
+  combined.set(iv, salt.length);
+  combined.set(new Uint8Array(ciphertext), salt.length + iv.length);
+
+  document.getElementById('output').value = toBase64(combined);
+  document.getElementById('resultBox').classList.add('show');
+
+  // Clear the sensitive fields immediately after use.
+  document.getElementById('token').value = '';
+  document.getElementById('passcode').value = '';
+}
+</script>
+</body>
+</html>
