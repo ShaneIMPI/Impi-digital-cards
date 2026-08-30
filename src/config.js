@@ -8,6 +8,16 @@ export const GITHUB_REPO = 'impi-digital-cards'
 export const GITHUB_BRANCH = 'main'
 
 // ---------------------------------------------------------------------
+// PASSCODE LOGIN
+// This holds your GitHub access token in ENCRYPTED form — safe to be
+// public, since it can only be unlocked with your passcode (which is
+// never stored anywhere). Generate this value using the standalone
+// passcode-setup.html tool (see SETUP.md) — never paste a real, unencrypted
+// token here directly.
+// ---------------------------------------------------------------------
+export const ENCRYPTED_GITHUB_TOKEN = ''
+
+// ---------------------------------------------------------------------
 // COMPANY-WIDE DEFAULTS
 // Edit this file directly in GitHub (web editor or github.dev) to set
 // your default logo and brand colours. Individual cards can still
