@@ -11,7 +11,7 @@ import {
 import { slugify } from '../utils/slugify.js'
 import { downloadCardAsPng } from '../utils/downloadCardImage.js'
 import { BRAND } from '../config.js'
-import GitHubTokenGate from './GitHubTokenGate.jsx'
+import PasscodeGate from './PasscodeGate.jsx'
 import CardPreview from '../components/CardPreview.jsx'
 
 const DATA_PATH = 'src/data/cards.json'
@@ -267,7 +267,7 @@ export default function Designer() {
   }
 
   if (unlocked === undefined) return <div className="admin-shell">Checking access…</div>
-  if (unlocked === false) return <GitHubTokenGate onUnlocked={() => setUnlocked(true)} />
+  if (unlocked === false) return <PasscodeGate onUnlocked={() => setUnlocked(true)} />
 
   return (
     <div className="designer-shell">
