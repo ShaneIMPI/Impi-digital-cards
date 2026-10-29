@@ -9,6 +9,7 @@ import {
   uploadBinaryFile
 } from '../githubClient.js'
 import { slugify } from '../utils/slugify.js'
+import { normalizeImage } from '../utils/normalizeImage.js'
 import { downloadCardAsPng } from '../utils/downloadCardImage.js'
 import { BRAND } from '../config.js'
 import PasscodeGate from './PasscodeGate.jsx'
@@ -132,9 +133,9 @@ export default function Designer() {
     setUploadingPhoto(true)
     setError('')
     try {
-      const ext = file.name.split('.').pop()
+      const { blob, ext } = await normalizeImage(file, { maxSize: 1000 })
       const path = `photos/${Date.now()}-${slugify(file.name.replace(/\.[^.]+$/, ''))}.${ext}`
-      await uploadBinaryFile(`public/${path}`, file)
+      await uploadBinaryFile(`public/${path}`, blob)
       updateField('photo_url', path)
     } catch (err) {
       setError(`Photo upload failed: ${err.message}`)
@@ -149,9 +150,9 @@ export default function Designer() {
     setUploadingLogo(true)
     setError('')
     try {
-      const ext = file.name.split('.').pop()
+      const { blob, ext } = await normalizeImage(file, { maxSize: 1600, asPng: true })
       const path = `logos/${Date.now()}-${slugify(file.name.replace(/\.[^.]+$/, ''))}.${ext}`
-      await uploadBinaryFile(`public/${path}`, file)
+      await uploadBinaryFile(`public/${path}`, blob)
       updateField('logo_url', path)
     } catch (err) {
       setError(`Logo upload failed: ${err.message}`)
