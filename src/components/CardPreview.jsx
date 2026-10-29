@@ -15,66 +15,69 @@ const CardPreview = forwardRef(function CardPreview(
     <div className="card-page" style={{ '--accent': accent, '--dark': dark }} ref={ref}>
       <div className="card-header">
         {logo ? (
-        <img src={logo} alt="Company logo" className="card-logo" />
-    ) : (
+          <img src={logo} alt="Company logo" className="card-logo" />
+        ) : (
           <div className="card-logo-fallback">IMPI</div>
         )}
         <span className="card-company">{COMPANY_NAME}</span>
       </div>
 
-      <div className="card-main">
+      <div className="card-identity-band">
         <div className="card-identity">
           <div className="card-role">{card.role_title || 'Job title'}</div>
           <h1 className="card-name">{card.full_name || 'Full name'}</h1>
         </div>
         {photo && (
-                    <img src={photo} alt={card.full_name} className="card-photo" crossOrigin="anonymous" />
-    )}
-      </div>
-
-      <div className="card-contact-row">
-        {card.phone && (
-          <div>
-            <div className="card-label">Phone</div>
-            <div className="card-value">{card.phone}</div>
-          </div>
-        )}
-        {card.email && (
-          <div className="card-contact-right">
-            <div className="card-label">Email</div>
-            <div className="card-value card-value-email">{card.email}</div>
-          </div>
+          <img src={photo} alt={card.full_name} className="card-photo" crossOrigin="anonymous" />
         )}
       </div>
 
-      {card.address && (
-        <div className="card-address-block">
-          <div className="card-label">Address</div>
-          <div className="card-value">{card.address}</div>
-        </div>
-      )}
+      <div className="card-body">
+        {(onSaveContact || onDownloadImage) && (
+          <div className="card-action-row">
+            {onSaveContact && (
+              <button className="card-save-btn" onClick={onSaveContact} disabled={saving}>
+                {saving ? 'Preparing…' : 'Save to Contacts'}
+              </button>
+            )}
+            {onDownloadImage && (
+              <button className="card-download-btn" onClick={onDownloadImage} disabled={downloading}>
+                {downloading ? 'Preparing…' : 'Download card (PNG)'}
+              </button>
+            )}
+          </div>
+        )}
 
-      {(onSaveContact || onDownloadImage) && (
-                <div className="card-action-row">
-          {onSaveContact && (
-            <button className="card-save-btn" onClick={onSaveContact} disabled={saving}>
-              {saving ? 'Preparing…' : '+ Save to Contacts'}
-            </button>
+        <div className="card-details">
+          {card.phone && (
+            <div className="card-detail">
+              <div className="card-label">Phone</div>
+              <div className="card-value">{card.phone}</div>
+            </div>
           )}
-          {onDownloadImage && (
-            <button className="card-download-btn" onClick={onDownloadImage} disabled={downloading}>
-              {downloading ? 'Preparing…' : 'Download card (PNG)'}
-            </button>
+          {card.email && (
+            <div className="card-detail">
+              <div className="card-label">Email</div>
+              <div className="card-value card-value-email">{card.email}</div>
+            </div>
+          )}
+          {card.address && (
+            <div className="card-detail">
+              <div className="card-label">Address</div>
+              <div className="card-value">{card.address}</div>
+            </div>
           )}
         </div>
-      )}
 
-      {qrDataUrl && (
-        <div className="card-qr">
-          <img src={qrDataUrl} alt="QR code linking to this card" />
-          <div className="card-qr-caption">Scan to open this card</div>
-        </div>
-      )}
+        {qrDataUrl && (
+          <div className="card-qr">
+            <div className="card-qr-frame">
+              <img src={qrDataUrl} alt="QR code linking to this card" />
+            </div>
+            <div className="card-qr-caption">Scan to save this card</div>
+          </div>
+        )}
+      </div>
 
       <div className="card-footer">
         {COMPANY_WEBSITE} · {COMPANY_PHONE}
