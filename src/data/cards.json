@@ -12,5 +12,19 @@
     "accent_color": "#B8942E",
     "dark_color": "#231F20",
     "is_active": true
+  },
+  {
+    "id": "9b26e36d-045b-4ca9-894d-1553086f080a",
+    "full_name": "Steven Bruce",
+    "role_title": "Regional Manager",
+    "phone": "079 746 3441",
+    "email": "steven@impi-secure.co.za",
+    "address": "10 Kosmos Crescent, Rynoue AH, Roodeplaat",
+    "slug": "steven-bruce",
+    "photo_url": "photos/1794467256200-2693a75c-3ea8-41b1-b47e-ac006a88b936.jpg",
+    "logo_url": "",
+    "accent_color": "#B8942E",
+    "dark_color": "#231F20",
+    "is_active": true
   }
 ]
